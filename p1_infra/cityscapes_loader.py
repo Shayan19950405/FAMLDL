@@ -1,3 +1,7 @@
+<<<<<<< Updated upstream
+=======
+"""Cityscapes val DataLoader — native 1024x2048, raw [0,255] images."""
+>>>>>>> Stashed changes
 import torch
 from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
@@ -39,6 +43,7 @@ class CityscapesValDataset(Dataset):
         gt_dir  = self.root / "gtFine"      / split
 
         self.samples = []
+<<<<<<< Updated upstream
         for img_path in sorted(img_dir.rglob("*_leftImg8bit.png")):
             city = img_path.parent.name
             stem = img_path.stem.replace("_leftImg8bit", "")
@@ -47,6 +52,13 @@ class CityscapesValDataset(Dataset):
                 self.samples.append((img_path, gt_path))
 
         print(f"CityscapesValDataset: {len(self.samples)} samples ({split})")
+=======
+        for ip in sorted(img_dir.rglob("*_leftImg8bit.png")):
+            city = ip.parent.name
+            stem = ip.stem.replace("_leftImg8bit","")
+            gp = gt_dir / city / f"{stem}_gtFine_labelIds.png"
+            if gp.exists(): self.samples.append((ip, gp))
+>>>>>>> Stashed changes
 
     def __len__(self):
         return len(self.samples)
@@ -58,6 +70,7 @@ class CityscapesValDataset(Dataset):
         return out
 
     def __getitem__(self, idx):
+<<<<<<< Updated upstream
         img_path, gt_path = self.samples[idx]
         img  = Image.open(img_path).convert("RGB")
         mask = np.array(Image.open(gt_path), dtype=np.int32)
@@ -75,3 +88,11 @@ def get_val_loader(root="/content/cityscapes", batch_size=4, num_workers=2):
     dataset = CityscapesValDataset(root=root, split="val")
     return DataLoader(dataset, batch_size=batch_size,
                       shuffle=False, num_workers=num_workers)
+=======
+        ip, gp = self.samples[idx]
+        img  = np.array(Image.open(ip).convert("RGB"))
+        mask = np.array(Image.open(gp), dtype=np.int32)
+        img_t  = torch.from_numpy(img).permute(2,0,1).float()
+        mask_t = torch.from_numpy(self._to_trainids(mask)).long()
+        return img_t, mask_t, str(ip)
+>>>>>>> Stashed changes
