@@ -18,6 +18,8 @@ from sklearn.metrics import average_precision_score
 from tqdm import tqdm
 
 # ── Path setup (works on Colab) ──
+# Reusing P1's shared loader to ensure consistent 
+# model loading across all teammates' evaluations
 sys.path.insert(0, '/content/project/eomt')
 sys.path.insert(0, '/content/project/p1_infra')
 
