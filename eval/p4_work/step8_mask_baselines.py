@@ -1,4 +1,8 @@
 # ── STEP 8 — EoMT Mask-Based Anomaly Baselines ──
+# Script version of FAMLDL.ipynb Cells 29-30 (the code that produced the
+# reported Step 8 results). Methods: MSP, MaxLogit, MaxEntropy, RbA.
+# Datasets: SMIYC RA-21 / RO-21, Fishyscapes L&F / Static, Road Anomaly.
+
 import os, sys, glob, json
 import numpy as np
 import torch
@@ -15,11 +19,10 @@ from models.eomt import EoMT
 from models.vit import ViT
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 ANOMALY_ROOT = Path('/content/anomaly_datasets/Validation_Dataset')
 DATASETS = {
-    'SMIYC_RA21':   ANOMALY_ROOT / 'RoadObsticle21/images/*.webp',
-    'SMIYC_RO21':   ANOMALY_ROOT / 'RoadAnomaly21/images/*.png',
+    'SMIYC_RA21':   ANOMALY_ROOT / 'RoadAnomaly21/images/*.png',
+    'SMIYC_RO21':   ANOMALY_ROOT / 'RoadObsticle21/images/*.webp',
     'FS_LostFound': ANOMALY_ROOT / 'FS_LostFound_full/images/*.png',
     'FS_Static':    ANOMALY_ROOT / 'fs_static/images/*.jpg',
     'RoadAnomaly':  ANOMALY_ROOT / 'RoadAnomaly/images/*.jpg',
@@ -52,11 +55,9 @@ def score_maxentropy(pl):
     p = pl.softmax(dim=0)
     return (-(p * p.log()).sum(dim=0)).cpu().numpy()
 
-def score_rba(ml, cl):
-    cls = cl.softmax(dim=-1)[:, :-1].max(dim=-1).values
-    msk = ml.sigmoid()
-    scores = cls[:, None, None].expand_as(msk) * msk
-    return (-scores.max(dim=0).values).cpu().numpy()
+def score_rba(pl):
+    # RbA: Nayal et al., ICCV 2023 — sum over classes
+    return (-pl.sum(dim=0)).cpu().numpy()
 
 def fpr_at_95_tpr(scores, labels):
     fpr, tpr, _ = roc_curve(labels, scores)
@@ -65,6 +66,9 @@ def fpr_at_95_tpr(scores, labels):
 def compute_metrics(score_list, gt_list):
     scores = np.concatenate([s.flatten() for s in score_list])
     gts    = np.concatenate([g.flatten() for g in gt_list])
+    valid  = gts != 255
+    scores = scores[valid]
+    gts    = gts[valid]
     ood = scores[gts == 1]
     ind = scores[gts == 0]
     val_out   = np.concatenate([ind, ood])
@@ -79,10 +83,7 @@ def load_gt(path, pathGT, img_size):
             (img_size[1], img_size[0]), Image.NEAREST))
     if 'RoadAnomaly' in pathGT:
         mask = np.where(mask == 2, 1, mask)
-    if 'LostAndFound' in pathGT or 'FS_LostFound' in pathGT:
-        mask = np.where(mask == 0, 255, mask)
-        mask = np.where(mask == 1, 0, mask)
-        mask = np.where((mask > 1) & (mask < 201), 1, mask)
+    # FS_LostFound_full: already [0=normal, 1=anomaly, 255=ignore]
     return mask
 
 def eval_one(model, glob_pattern, img_size):
@@ -90,11 +91,9 @@ def eval_one(model, glob_pattern, img_size):
     if not paths:
         print(f'    [WARN] No images found: {glob_pattern}')
         return None
-
-    input_tf  = Compose([Resize(img_size, Image.BILINEAR), ToTensor()])
+    input_tf = Compose([Resize(img_size, Image.BILINEAR), ToTensor()])
     scores = {m: [] for m in ['msp','maxlogit','maxentropy','rba']}
     gts = []
-
     for path in tqdm(paths, leave=False):
         pathGT = path.replace('images', 'labels_masks')
         if 'RoadObsticle21' in pathGT: pathGT = pathGT.replace('webp','png')
@@ -103,7 +102,6 @@ def eval_one(model, glob_pattern, img_size):
         if not os.path.exists(pathGT): continue
         gt = load_gt(path, pathGT, img_size)
         if 1 not in np.unique(gt): continue
-
         img = input_tf(Image.open(path).convert('RGB')).to(DEVICE)
         with torch.no_grad():
             ml, cl = model(img.unsqueeze(0) / 255.0)
@@ -111,20 +109,15 @@ def eval_one(model, glob_pattern, img_size):
                                mode='bilinear', align_corners=False)
             cl = cl[-1]
             pl = to_per_pixel_logits(ml, cl).squeeze(0)
-            ml0 = ml.squeeze(0)
-            cl0 = cl.squeeze(0)
-
         scores['msp'].append(score_msp(pl))
         scores['maxlogit'].append(score_maxlogit(pl))
         scores['maxentropy'].append(score_maxentropy(pl))
-        scores['rba'].append(score_rba(ml0, cl0))
+        scores['rba'].append(score_rba(pl))
         gts.append(gt)
         torch.cuda.empty_cache()
-
     if not gts:
         print('    [WARN] No valid images found')
         return None
-
     results = {}
     for m, sl in scores.items():
         auprc, fpr = compute_metrics(sl, gts)
@@ -132,7 +125,19 @@ def eval_one(model, glob_pattern, img_size):
         print(f'    {m:<12} AuPRC={auprc:.1f}  FPR95={fpr:.1f}')
     return results
 
-# ── Checkpoints ──
+print(' All functions defined!')
+
+
+# ── Run all checkpoints ──
+import shutil, os
+
+os.makedirs('/content/checkpoints', exist_ok=True)
+for fname in ['eomt_coco.bin', 'eomt_cityscapes.bin']:
+    src = f'/content/drive/MyDrive/FAMLDL/{fname}'
+    dst = f'/content/checkpoints/{fname}'
+    if not os.path.exists(dst) and os.path.exists(src):
+        shutil.copy(src, dst)
+
 CHECKPOINTS = {
     'EoMT_COCO': {
         'path': '/content/checkpoints/eomt_coco.bin',
