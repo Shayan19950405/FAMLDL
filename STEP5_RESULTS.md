@@ -18,7 +18,7 @@ freezing strategy changes between runs.
 | EoMT-COCO zero-shot (mapped)     | 55.00 | 61.47 |   0%   |  —  |  —  |
 | **5.1 head-only**                | 75.52 | 77.09 |  6.9%  | 107 | 13.77 h |
 | **5.2 partial (last-2 blocks)**  | 79.75 | 81.41 | 21.8%  |  60 |  7.18 h |
-| **5.3 LoRA (rank 8, α=16)**      | 79.34 | 80.83 |  7.2%  |  60 |  ~5.8 h |
+| **5.3 LoRA (rank 8, α=16)**      | 79.34 | 80.83 |  7.2%  |  60 |  7.04 h |
 | EoMT-Cityscapes (paper ref)      | 81.45 | 82.78 | 100%   |  —  |  —  |
 
 mIoU (17 cls fair) excludes `pole` and `rider`, which have no COCO panoptic
@@ -88,7 +88,4 @@ that benefit most from deep feature adaptation.
 - Result JSONs (on Drive): `/FAMLDL/results/step5/exp_5_*_eval.json`
 - Audit-trail checkpoints (Lightning .ckpt with optimizer state) on Drive:
   `/FAMLDL/checkpoints/exp_5_*-epoch=*.ckpt`
-- Wandb runs: `s338784-politecnico-di-torino/FAMLDL`
-  - 5.1 head-only: `wl0hf8h8`
-  - 5.2 partial: `ghlkafzn`
-  - 5.3 LoRA: `mm2zp30q`
+- Training curves were logged with Weights & Biases (private workspace).

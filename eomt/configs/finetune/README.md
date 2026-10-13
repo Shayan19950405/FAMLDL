@@ -22,7 +22,7 @@ cannot be expressed in YAML alone.
 | starting ckpt | `eomt_coco_for_cityscapes.bin` (adapted; see notebook Cell 14) |
 | backbone | vit_base_patch14_reg4_dinov2 |
 | loss | EoMT's `MaskClassificationLoss` (Mask2Former-style, untouched) |
-| logger | WandbLogger (project FAMLDL) |
+| logger | WandbLogger (private workspace) |
 | best-ckpt monitor | metrics/val_iou_all (max) |
 
 ## Experiment 5.1 — head-only
@@ -36,7 +36,6 @@ cannot be expressed in YAML alone.
 | ANNEAL_START | [5950, 14875, 23800] |
 | ANNEAL_END | [11900, 20825, 29750] |
 | wall time | 13.77 h |
-| wandb run | wl0hf8h8 |
 | best epoch | 97 |
 | **mIoU (19 cls)** | **75.52** |
 | mIoU (17 cls fair) | 77.09 |
@@ -53,7 +52,6 @@ cannot be expressed in YAML alone.
 | ANNEAL_START | [3317, 8292, 13268] |
 | ANNEAL_END | [6634, 11609, 16585] |
 | wall time | 7.18 h |
-| wandb run | ghlkafzn |
 | best epoch | 53 |
 | **mIoU (19 cls)** | **79.75** |
 | mIoU (17 cls fair) | 81.41 |
@@ -74,8 +72,7 @@ cannot be expressed in YAML alone.
 | trainable % | 7.2% |
 | ANNEAL_START | [3317, 8292, 13268] |
 | ANNEAL_END | [6634, 11609, 16585] |
-| wall time | ~5.8 h |
-| wandb run | mm2zp30q |
+| wall time | 7.04 h |
 | best epoch | 56 |
 | LoRA merge formula | W_eff = W_base + (α/r) · B · A |
 | **mIoU (19 cls)** | **79.34** |
