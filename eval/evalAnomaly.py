@@ -1,4 +1,3 @@
-%%writefile /content/MaskArchitectureAnomaly_CourseProject/eval/evalAnomaly.py
 # evalAnomaly.py — pixel-wise anomaly scoring with ERFNet
 # Methods: MSP, MaxLogit, MaxEntropy
 import os, sys, glob, argparse
