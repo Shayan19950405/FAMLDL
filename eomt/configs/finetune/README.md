@@ -1,9 +1,9 @@
 # Step 5 fine-tuning — actual hyperparameters used
 
 The training was NOT launched via Lightning CLI YAML — it was launched
-directly from notebook cells (Cells 16, 18, 21 of `FAMLDL.ipynb`).
+directly from notebook cells (Cells 17, 19, 22 of `FAMLDL.ipynb`).
 This README documents the real hyperparameters as a reproducibility reference.
-For LoRA, the injection step requires Python code (see notebook Cell 20) and
+For LoRA, the injection step requires Python code (see notebook Cell 21) and
 cannot be expressed in YAML alone.
 
 ## Common settings (all three experiments)

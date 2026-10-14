@@ -1,5 +1,11 @@
 # Anomaly Segmentation Eval
 
+> **This project (Step 7).** `evalAnomaly.py` was rewritten to score ERFNet with MSP, MaxLogit or MaxEntropy and save one score map per image:
+> `python evalAnomaly.py --input '<Validation_Dataset>/RoadAnomaly21/images/*.png' --method maxlogit --output ./scores/RA21`
+> (`--method` is `msp`, `maxlogit` or `maxentropy`; weights default to `../trained_models/erfnet_pretrained.pth`).
+> AuPRC and FPR95 are computed with `metrics.py`, as done in `anomaly_detection_v3.ipynb`; temperature scaling uses `../temperature_scaling.py`.
+> The rest of this file is the original course-starter documentation.
+
 In this folder you can find some functions to evaluate your model's output. It is designed to load the ERFNet checkpoint so you need to change it when evaluating the EoMT model. The main function to look for is evalAnomaly.py that produces the Anomaly Segmentation results. Other functions could be useful for extensions.
 
 ## Requirements:
