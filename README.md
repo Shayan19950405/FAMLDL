@@ -1,10 +1,10 @@
 # Comprehensive Road Scene Understanding for Autonomous Driving
 
-Group project for **Fundamentals of AI, Machine and Deep Learning (FAIMDL)**, Politecnico di Torino, 2026.
+Group project (Group 53) for **Fundamentals of AI, Machine and Deep Learning (FAIMDL)**, Politecnico di Torino, 2026.
 
 A self-driving car has to do two things with every camera frame: label each pixel (road, car, person, …) and notice when something on the road does not belong to any class it was trained on (lost cargo, an animal, debris). This project studies both:
 
-1. **Semantic segmentation** on Cityscapes with EoMT (Encoder-only Mask Transformer, a DINOv2 ViT-B/14 backbone), including parameter-efficient fine-tuning of a COCO-pretrained model.
+1. **Semantic segmentation** on Cityscapes with EoMT (Encoder-only Mask Transformer on a DINOv2-pretrained ViT-Base backbone, 16×16 patches), including parameter-efficient fine-tuning of a COCO-pretrained model.
 2. **Post-hoc anomaly (out-of-distribution) detection** on five road-anomaly benchmarks, comparing a pixel-based CNN (ERFNet) with mask-based EoMT models.
 
 ## Main results
@@ -22,11 +22,11 @@ A self-driving car has to do two things with every camera frame: label each pixe
 ¹ Excludes `pole` and `rider`, which have no COCO equivalent, for a fair comparison with the zero-shot COCO model.
 ² Single A100 40 GB, AMP 16-bit mixed precision, batch size 4.
 
-**Takeaway:** LoRA comes within 0.41 mIoU of partial unfreezing while training about one third as many parameters, and reaches ~97% of the fully trained reference. LoRA is best on 14 of 19 classes; partial unfreezing wins mainly on rare large vehicles (train, bus). Per-class tables are in [`STEP5_RESULTS.md`](STEP5_RESULTS.md).
+**Takeaway:** LoRA comes within 0.41 mIoU of partial unfreezing while training about one third as many parameters, and reaches ~97% of the fully trained reference. LoRA is best on 14 of 19 classes; partial unfreezing wins the other 5, by a wide margin on the rare large vehicles (train +15.7 IoU, bus +6.5) and narrowly on wall, rider and motorcycle. Per-class tables are in [`STEP5_RESULTS.md`](STEP5_RESULTS.md).
 
 ### Anomaly detection — AuPRC % (↑) / FPR95 % (↓)
 
-Benchmarks: SMIYC RoadAnomaly21 (RA-21, 10 images), SMIYC RoadObstacle21 (RO-21, 30), Fishyscapes Lost&Found (100), Fishyscapes Static (30), Road Anomaly (60).
+Benchmarks: SegmentMeIfYouCan (SMIYC) RoadAnomaly21 (RA-21, 10 images) and RoadObstacle21 (RO-21, 30), Fishyscapes Lost&Found (FS L&F, 100) and Static (FS Static, 30), and Road Anomaly (60). ERFNet scores images at native resolution; the EoMT checkpoints resize each image bilinearly to their training resolution (640² COCO, 1024² otherwise).
 
 | Model | Method | RA-21 | RO-21 | FS L&F | FS Static | Road Anomaly |
 |---|---|---|---|---|---|---|
@@ -48,7 +48,7 @@ Benchmarks: SMIYC RoadAnomaly21 (RA-21, 10 images), SMIYC RoadObstacle21 (RO-21,
 
 **Takeaways:**
 - Across the checkpoints we evaluated, the choice of checkpoint affected anomaly performance more than the choice of scoring method; the scoring method moved AuPRC by less than one point in 17 of 20 model × dataset settings.
-- Temperature scaling on MSP (EoMT-Finetuned) gave negligible gains: the best temperature, T = 0.01, added +0.23 AuPRC on RA-21.
+- Temperature scaling on MSP gave only small gains: at most +0.41 AuPRC for ERFNet (T = 0.5 on RA-21) and +0.23 for EoMT-Finetuned (NLL-optimal T = 0.01, RA-21). T = 1.1 was slightly worse than no scaling on most datasets.
 - Post-hoc scores remain weak on these benchmarks (AuPRC below 3% on three of five), so anomaly detection is an open problem here, not a solved one.
 - Only the partial-unfreeze checkpoint (5.2) was evaluated for anomaly detection; head-only and LoRA were not.
 
@@ -89,8 +89,8 @@ The code was run on Google Colab. Large files are not in the repository: the Cit
 |---|---|---|
 | Shayan Bagheri | `p1-infra` | Shared infrastructure, Step 4, integration and final audit |
 | Shahrzad Shivaei | `p2-train` | Step 5 — fine-tuning experiments |
-| Mim | `p3-baselines` | Step 7 — ERFNet anomaly baselines |
-| Shabab | `p4-eval` | Step 8 — EoMT anomaly evaluation |
+| Most Marufatul Jannat Mim | `p3-baselines` | Step 7 — ERFNet anomaly baselines |
+| Abdullah Shabab | `p4-eval` | Step 8 — EoMT anomaly evaluation |
 
 ## Credits
 
