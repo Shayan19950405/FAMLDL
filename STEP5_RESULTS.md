@@ -29,9 +29,10 @@ secondary metric for transparency.
 
 LoRA (7.2% trainable, attention QKV adapters in all 12 ViT blocks) matches
 partial unfreeze (21.8% trainable) within 0.41 mIoU at 1/3 the parameter
-budget. LoRA wins on 14 of 19 individual classes; partial wins decisively
-only on `train` (+15.7 mIoU) and `bus` (+6.5), the rare large-vehicle classes
-that benefit most from deep feature adaptation.
+budget. LoRA wins on 14 of 19 individual classes; partial unfreeze wins the
+other 5, decisively on `train` (+15.7 IoU) and `bus` (+6.5 IoU), the rare
+large-vehicle classes that benefit most from deep feature adaptation, and
+narrowly on `wall`, `rider` and `motorcycle`.
 
 ## Per-class IoU (19-class)
 
