@@ -10,20 +10,23 @@ CLASSES = ["road","sidewalk","building","wall","fence","pole",
            "person","rider","car","truck","bus","train","motorcycle","bicycle"]
 
 def new_conf(device="cuda"):
-    return torch.zeros((NUM_CLASSES, NUM_CLASSES), dtype=torch.long, device=device)
+    # Column NUM_CLASSES collects predictions with no Cityscapes class (255),
+    # so they count as errors (false negatives) instead of being dropped.
+    return torch.zeros((NUM_CLASSES, NUM_CLASSES + 1), dtype=torch.long, device=device)
 
 def update_conf(conf, pred, gt):
     pred = pred.flatten(); gt = gt.flatten()
-    valid = (gt != IGNORE) & (pred != IGNORE)
+    valid = gt != IGNORE
     p, g = pred[valid].long(), gt[valid].long()
-    mask = (g >= 0) & (g < NUM_CLASSES) & (p >= 0) & (p < NUM_CLASSES)
-    idx = g[mask] * NUM_CLASSES + p[mask]
-    conf += torch.bincount(idx, minlength=NUM_CLASSES**2).reshape(NUM_CLASSES, NUM_CLASSES)
+    p = torch.where((p >= 0) & (p < NUM_CLASSES), p, torch.full_like(p, NUM_CLASSES))
+    mask = (g >= 0) & (g < NUM_CLASSES)
+    idx = g[mask] * (NUM_CLASSES + 1) + p[mask]
+    conf += torch.bincount(idx, minlength=NUM_CLASSES * (NUM_CLASSES + 1)).reshape(NUM_CLASSES, NUM_CLASSES + 1)
     return conf
 
 def miou(conf, subset=None):
-    tp = conf.diag().float()
-    fp = conf.sum(0).float() - tp
+    tp = conf[:, :NUM_CLASSES].diag().float()
+    fp = conf[:, :NUM_CLASSES].sum(0).float() - tp
     fn = conf.sum(1).float() - tp
     iou = tp / (tp + fp + fn + 1e-10)
     iou_list = iou.cpu().tolist()

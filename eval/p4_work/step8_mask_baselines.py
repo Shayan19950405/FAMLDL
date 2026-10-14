@@ -104,7 +104,7 @@ def eval_one(model, glob_pattern, img_size):
         if 1 not in np.unique(gt): continue
         img = input_tf(Image.open(path).convert('RGB')).to(DEVICE)
         with torch.no_grad():
-            ml, cl = model(img.unsqueeze(0) / 255.0)
+            ml, cl = model(img.unsqueeze(0))  # ToTensor already gives [0, 1]
             ml = F.interpolate(ml[-1], img_size,
                                mode='bilinear', align_corners=False)
             cl = cl[-1]

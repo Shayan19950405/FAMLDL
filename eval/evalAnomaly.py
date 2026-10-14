@@ -35,11 +35,16 @@ def load_model(path, device):
 
 
 def preprocess(path):
-    """Load RGB image → normalised (1,3,H,W) tensor."""
+    """Load RGB image → (1,3,512,1024) tensor in [0, 1].
+
+    Same input as the course starter's evalAnomaly.py (commit d75cb00): the
+    provided ERFNet was trained on [0, 1] images without ImageNet normalisation.
+    metrics.py resizes the score maps back to mask resolution.
+    """
     img = Image.open(path).convert('RGB')
     t = transforms.Compose([
+        transforms.Resize((512, 1024), Image.BILINEAR),
         transforms.ToTensor(),
-        transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
     return t(img).unsqueeze(0)
 
