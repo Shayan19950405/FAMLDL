@@ -22,7 +22,7 @@ A self-driving car has to do two things with every camera frame: label each pixe
 ¹ Excludes `pole` and `rider`, which have no COCO equivalent, for a fair comparison with the zero-shot COCO model.
 ² Single A100 40 GB, AMP 16-bit mixed precision, batch size 4.
 
-**Takeaway:** LoRA comes within 0.41 mIoU of partial unfreezing while training about one third as many parameters, and reaches ~97% of the fully trained reference. LoRA is best on 14 of 19 classes; partial unfreezing wins the other 5, by a wide margin on the rare large vehicles (train +15.7 IoU, bus +6.5) and narrowly on wall, rider and motorcycle. Per-class tables are in [`STEP5_RESULTS.md`](STEP5_RESULTS.md).
+**Takeaway:** LoRA comes within 0.41 mIoU of partial unfreezing while training about one third as many parameters, and reaches ~97% of the fully trained reference. LoRA is best on 14 of 19 classes; partial unfreezing wins the other 5, by a wide margin on the rare large vehicles (train +15.7 IoU, bus +6.5) and by smaller margins on wall (+3.7), rider (+2.3) and motorcycle (+0.1). Per-class tables are in [`STEP5_RESULTS.md`](STEP5_RESULTS.md).
 
 ### Anomaly detection — AuPRC % (↑) / FPR95 % (↓)
 
@@ -48,7 +48,8 @@ Benchmarks: SegmentMeIfYouCan (SMIYC) RoadAnomaly21 (RA-21, 10 images) and RoadO
 
 **Takeaways:**
 - Across the checkpoints we evaluated, the choice of checkpoint affected anomaly performance more than the choice of scoring method; the scoring method moved AuPRC by less than one point in 17 of 20 model × dataset settings.
-- Temperature scaling on MSP gave only small gains: at most +0.41 AuPRC for ERFNet (T = 0.5 on RA-21) and +0.23 for EoMT-Finetuned (NLL-optimal T = 0.01, RA-21). T = 1.1 was slightly worse than no scaling on most datasets.
+- Temperature scaling on MSP gave only small gains: at most +0.41 AuPRC for ERFNet (T = 0.5 on RA-21) and +0.23 for EoMT-Finetuned (T = 0.01 on RA-21). For both models, T = 1.1 lowered AuPRC slightly on RA-21 and Road Anomaly and left the other three datasets unchanged.
+- For EoMT-Finetuned, T was fitted by minimizing NLL on Road Anomaly, which is also an evaluation set, and the search stopped at its lower bound (T = 0.01); the ERFNet temperatures were picked from a small fixed grid.
 - Post-hoc scores remain weak on these benchmarks (AuPRC below 3% on three of five), so anomaly detection is an open problem here, not a solved one.
 - Only the partial-unfreeze checkpoint (5.2) was evaluated for anomaly detection; head-only and LoRA were not.
 

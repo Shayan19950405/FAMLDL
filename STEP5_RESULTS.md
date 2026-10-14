@@ -4,8 +4,8 @@ Three fine-tuning strategies were applied to adapt the EoMT-COCO checkpoint
 (640×640, 200 queries, 133+1 classes) to Cityscapes semantic segmentation
 (1024×1024, 100 queries, 19+1 classes). Starting point identical across all
 three experiments: `eomt_coco_for_cityscapes.bin` (193 tensors copied verbatim
-from COCO, 1 pos_embed interpolated 40×40→64×64, 3 incompatible heads freshly
-re-initialized).
+from COCO, 1 pos_embed interpolated 40×40→64×64, 3 incompatible tensors — query
+embeddings and class-head weight and bias — freshly re-initialized).
 
 All experiments use EoMT's own Lightning training infrastructure
 (`MaskClassificationSemantic` + `MaskClassificationLoss`) untouched. Only the
@@ -19,7 +19,7 @@ freezing strategy changes between runs.
 | **5.1 head-only**                | 75.52 | 77.09 |  6.9%  | 107 | 13.77 h |
 | **5.2 partial (last-2 blocks)**  | 79.75 | 81.41 | 21.8%  |  60 |  7.18 h |
 | **5.3 LoRA (rank 8, α=16)**      | 79.34 | 80.83 |  7.2%  |  60 |  7.04 h |
-| EoMT-Cityscapes (paper ref)      | 81.45 | 82.78 | 100%   |  —  |  —  |
+| EoMT-Cityscapes (released ckpt)  | 81.45 | 82.78 | 100%   |  —  |  —  |
 
 mIoU (17 cls fair) excludes `pole` and `rider`, which have no COCO panoptic
 equivalents and unfairly penalize the COCO zero-shot baseline. Used as a
@@ -31,8 +31,8 @@ LoRA (7.2% trainable, attention QKV adapters in all 12 ViT blocks) matches
 partial unfreeze (21.8% trainable) within 0.41 mIoU at 1/3 the parameter
 budget. LoRA wins on 14 of 19 individual classes; partial unfreeze wins the
 other 5, decisively on `train` (+15.7 IoU) and `bus` (+6.5 IoU), the rare
-large-vehicle classes that benefit most from deep feature adaptation, and
-narrowly on `wall`, `rider` and `motorcycle`.
+large-vehicle classes, and by smaller margins on `wall` (+3.7), `rider` (+2.3)
+and `motorcycle` (+0.1).
 
 ## Per-class IoU (19-class)
 
@@ -75,8 +75,10 @@ narrowly on `wall`, `rider` and `motorcycle`.
    Same pipeline used for Step 4 baselines.
 
 4. **LoRA target layer**: `attn.qkv` (the fused QKV linear) in each of 12 ViT
-   blocks. Per Hu et al. 2022 Sec. 4.2, attention QKV is the most effective
-   target. Rank 8, alpha 16 (paper defaults, scale = 2).
+   blocks. Hu et al. 2022 apply LoRA to the attention weights (Sec. 4.2) and
+   find adapting the query and value projections most effective (Sec. 7.1);
+   EoMT's ViT fuses Q, K and V into one linear layer, so the adapter covers all
+   three. Rank 8, alpha 16 (scale α/r = 2).
 
 5. **LoRA merge formula** (`exp_5_3_lora.bin`): `W_eff = W_base + (α/r) · B·A`.
    Final checkpoint has no LoRA structure — loads via vanilla `load_eomt()`.
