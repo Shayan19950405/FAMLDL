@@ -1,6 +1,6 @@
 # p1_infra — Shared Infrastructure (from Step 4, Shayan's work)
 
-Reusable modules for Steps 4, 5, 7, 8.
+Reusable modules for Steps 4, 5 and 8 (Step 7 uses `eval/`).
 
 ```python
 import sys
