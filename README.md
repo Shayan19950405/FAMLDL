@@ -91,7 +91,7 @@ The code was run on Google Colab. Large files are not in the repository: the Cit
 | Shayan Bagheri | `p1-infra` | Shared infrastructure, Step 4, integration and final audit |
 | Shahrzad Shivaei | `p2-train` | Step 5 — fine-tuning experiments |
 | Most Marufatul Jannat Mim | `p3-baselines` | Step 7 — ERFNet anomaly baselines |
-| Abdullah Shabab | `p4-eval` | Step 8 — EoMT anomaly evaluation |
+| Shabab Abdullah | `p4-eval` | Step 8 — EoMT anomaly evaluation |
 
 ## Credits
 
