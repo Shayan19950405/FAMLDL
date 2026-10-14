@@ -10,7 +10,7 @@ cannot be expressed in YAML alone.
 
 | Setting | Value |
 |---|---|
-| seed | 42 |
+| seed | not fixed (the training cells do not call `seed_everything`) |
 | precision | 16-mixed (AMP) |
 | devices | 1 (A100 40 GB) |
 | gradient_clip | 0.01, norm |
@@ -18,7 +18,7 @@ cannot be expressed in YAML alone.
 | IMG_SIZE | (1024, 1024) |
 | num_queries | 100 |
 | num_classes | 19 |
-| num_blocks | 3 (mask-classification heads, paper default) |
+| num_blocks | 3 (last ViT blocks that also process the queries; EoMT Cityscapes config) |
 | starting ckpt | `eomt_coco_for_cityscapes.bin` (adapted; see notebook Cell 17) |
 | backbone | vit_base_patch14_reg4_dinov2 |
 | loss | EoMT's `MaskClassificationLoss` (Mask2Former-style, untouched) |
@@ -33,8 +33,8 @@ cannot be expressed in YAML alone.
 | FreezingCallback.strategy | head_only |
 | trainable | encoder fully frozen; only queries + class_head + mask_head + upscale |
 | trainable % | 6.9% |
-| ANNEAL_START | [5950, 14875, 23800] |
-| ANNEAL_END | [11900, 20825, 29750] |
+| ANNEAL_START | [3317, 8292, 13268] |
+| ANNEAL_END | [6634, 11609, 16585] |
 | wall time | 13.77 h |
 | best epoch | 97 |
 | **mIoU (19 cls)** | **75.52** |
@@ -62,7 +62,7 @@ cannot be expressed in YAML alone.
 |---|---|
 | epochs | 60 |
 | FreezingCallback.strategy | lora |
-| LoRA target | attn.qkv (per Hu et al. 2022 Sec. 4.2) |
+| LoRA target | attn.qkv (fused Q/K/V projection; Hu et al. 2022 adapt attention weights, Sec. 4.2) |
 | LoRA rank (r) | 8 |
 | LoRA alpha | 16.0 |
 | LoRA scale (α/r) | 2.0 |
